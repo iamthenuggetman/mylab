@@ -1,4 +1,4 @@
-pipeline{
+pipeline {
     //Directives
     agent any
     tools {
@@ -15,14 +15,14 @@ pipeline{
         // Specify various stage with in stages
 
         // stage 1. Build
-        stage ('Build'){
+        stage('Build') {
             steps {
                 sh 'mvn clean install package'
             }
         }
 
         // Stage2 : Testing
-        stage ('Test'){
+        stage('Test') {
             steps {
                 echo ' testing......'
 
@@ -30,28 +30,31 @@ pipeline{
         }
 
         // Stage3 : Publish the artifacts to Nexus
-        stage ('Publish to Nexus'){
+        stage('Publish to Nexus') {
             steps {
-               nexusArtifactUploader artifacts:
-               [
-                   [
-                    artifactId: "${ArtifactId}",
-                    classifier: '',
-                    file: 'target/VinayDevOpsLab-0.0.4-SNAPSHOT.war',
-                    type: 'war'
-                   ]
-                ],
-                credentialsId: '54b85066-304b-40b5-a8af-fc52c2c323ce',
-                groupId: "${GroupId}",
-                nexusUrl: '172.20.10.24:8081',
-                nexusVersion: 'nexus3',
-                protocol: 'http',
-                repository: 'VinaysDevOpsLab-SNAPSHOT',
-                version: "${Version}"
+                script {
+                    def NexusRepo = Version.endsWith("SNAPSHOT") ? "VinaysDevOpsLab-SNAPSHOT" : "VinaysDevOpsLab-RELEASE"
+
+                    nexusArtifactUploader artifacts: [
+                            [
+                                artifactId: "${ArtifactId}",
+                                classifier: '',
+                                file: 'target/VinayDevOpsLab-0.0.4-SNAPSHOT.war',
+                                type: 'war'
+                            ]
+                        ],
+                        credentialsId: '54b85066-304b-40b5-a8af-fc52c2c323ce',
+                        groupId: "${GroupId}",
+                        nexusUrl: '172.20.10.24:8081',
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        repository: "${NexusRepo}",
+                        version: "${Version}"
+                }
             }
         }
 
-        stage ('Print environment variables'){
+        stage('Print environment variables') {
             steps {
                 echo "ArtificatID is '${ArtifactId}'"
                 echo "Version is '${Version}'"
@@ -67,7 +70,7 @@ pipeline{
 
         //     }
         // }
-        
+
     }
 
 }
